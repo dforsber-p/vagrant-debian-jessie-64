@@ -132,12 +132,17 @@ trap 'cleanup' EXIT
 
 # start with a clean slate
 if VBoxManage list runningvms | grep "${BOX}" >/dev/null 2>&1; then
-  echo "Stopping VM ..."
+  echo "Stopping vm ..."
   ${STOPVM}
 fi
 if VBoxManage showvminfo "${BOX}" >/dev/null 2>&1; then
-  echo "Unregistering VM ..."
+  echo "Unregistering vm ..."
   VBoxManage unregistervm "${BOX}" --delete
+fi
+if [ -d "${FOLDER_BUILD}" ]; then
+  echo "Cleaning build directory ..."
+  chmod -R u+w "${FOLDER_BUILD}"
+  rm -rf "${FOLDER_BUILD}"
 fi
 if [ -f host.ini ]; then
   rm host.ini
@@ -173,6 +178,7 @@ fi
 
 echo "Verifying ${ISO_FILE} ..."
 # make sure download is right...
+<<<<<<< HEAD
 # fetch hash and signature file
 ISO_HASHURL="${ISO_BASEURL}/${HASH_FILE}"
 ISO_HASHSIGNURL="${ISO_HASHURL}.sign"
@@ -197,6 +203,11 @@ ISO_HASH="$(cat "${HASH_FILENAME}" | grep " $ISO_FILE" | cut -f1 -d" ")"
 ISO_HASH_CALCULATED=$($HASH_PROG "${ISO_FILENAME}" | cut -d ' ' -f 1)
 if [ "${ISO_HASH_CALCULATED}" != "${ISO_HASH}" ]; then
   echo >&2 "ERROR: hash from $HASH_PROG does not match. Got ${ISO_HASH_CALCULATED} instead of ${ISO_HASH}. Aborting."
+=======
+ISO_HASH=$($MD5 "${ISO_FILENAME}" | cut -d ' ' -f 1)
+if [ "${ISO_MD5}" != "${ISO_HASH}" ]; then
+  echo "ERROR: MD5 does not match. Got ${ISO_HASH} instead of ${ISO_MD5}. Aborting."
+>>>>>>> Minor fixes
   exit 1
 fi
 
@@ -272,7 +283,7 @@ fi
 
 echo "Creating VM Box..."
 # create virtual machine
-if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
+if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>&1; then
   VBoxManage createvm \
     --name "${BOX}" \
     --ostype "${VBOX_OSTYPE}" \
