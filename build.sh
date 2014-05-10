@@ -7,6 +7,14 @@ set -o pipefail
 # for debugging
 #set -o xtrace
 
+# make sure we have dependencies
+hash vagrant 2>/dev/null || { echo >&2 "ERROR: vagrant not found.  Aborting."; exit 1; }
+hash VBoxManage 2>/dev/null || { echo >&2 "ERROR: VBoxManage not found.  Aborting."; exit 1; }
+hash 7z 2>/dev/null || { echo >&2 "ERROR: 7z not found. Aborting."; exit 1; }
+hash curl 2>/dev/null || { echo >&2 "ERROR: curl not found. Aborting."; exit 1; }
+
+VBOX_VERSION="$(VBoxManage --version)"
+
 ### Configuration ###
 BASEDIR=$(dirname $0)
 
@@ -178,7 +186,7 @@ fi
 
 echo "Verifying ${ISO_FILE} ..."
 # make sure download is right...
-<<<<<<< HEAD
+
 # fetch hash and signature file
 ISO_HASHURL="${ISO_BASEURL}/${HASH_FILE}"
 ISO_HASHSIGNURL="${ISO_HASHURL}.sign"
@@ -203,11 +211,6 @@ ISO_HASH="$(cat "${HASH_FILENAME}" | grep " $ISO_FILE" | cut -f1 -d" ")"
 ISO_HASH_CALCULATED=$($HASH_PROG "${ISO_FILENAME}" | cut -d ' ' -f 1)
 if [ "${ISO_HASH_CALCULATED}" != "${ISO_HASH}" ]; then
   echo >&2 "ERROR: hash from $HASH_PROG does not match. Got ${ISO_HASH_CALCULATED} instead of ${ISO_HASH}. Aborting."
-=======
-ISO_HASH=$($MD5 "${ISO_FILENAME}" | cut -d ' ' -f 1)
-if [ "${ISO_MD5}" != "${ISO_HASH}" ]; then
-  echo "ERROR: MD5 does not match. Got ${ISO_HASH} instead of ${ISO_MD5}. Aborting."
->>>>>>> Minor fixes
   exit 1
 fi
 
