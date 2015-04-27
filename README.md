@@ -81,8 +81,6 @@ The following variables are supported:
 
 * `ANSIBLE_SSHPORT` - Optional the SSH port for ansible. Default is `2222`.
 
-
-
 ### Notes
 
 When the ansible playbook has errors, login to the running machine with
