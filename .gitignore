@@ -1,8 +1,8 @@
 build/
 test/
 iso/
-
+local/
 .DS_Store
-
+host.ini
 *.box
 *.sw?
