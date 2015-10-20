@@ -49,8 +49,6 @@ ANSIBLE_PLAYBOOK="${ANSIBLE_PLAYBOOK:-}"
 ANSIBLE_SSHPORT="${ANSIBLE_SSHPORT:-2222}"
 # local SSH user for ansible
 ANSIBLE_USER="deploy"
-# Guest additions ISO on the host system
-VBOX_GUEST_ADDITIONS=/usr/share/virtualbox/VBoxGuestAdditions.iso
 
 # location, location, location
 FOLDER_BASE=$(pwd)
@@ -108,9 +106,15 @@ else
   exit 1
 fi
 
+# Guest additions ISO on the host system
+VBOX_GUEST_ADDITIONS=VBoxGuestAdditions.iso
 if [ ! -f "$VBOX_GUEST_ADDITIONS" ]; then
-  echo >&2 "ERROR: VirtualBox guest addition file $VBOX_GUEST_ADDITIONS not found. Aborting."
-  exit 1
+    VBOX_VERSION="5.0.6"
+    wget "http://download.virtualbox.org/virtualbox/${VBOX_VERSION}/VBoxGuestAdditions_${VBOX_VERSION}.iso" -O $VBOX_GUEST_ADDITIONS
+fi
+if [ ! -f "$VBOX_GUEST_ADDITIONS" ]; then
+    echo >&2 "ERROR: VirtualBox guest addition file $VBOX_GUEST_ADDITIONS not found. Aborting."
+    exit 1
 fi
 
 if [ -n "$ANSIBLE_PLAYBOOK" ]; then
@@ -181,7 +185,7 @@ INITRD_FILENAME="${FOLDER_ISO}/initrd.gz"
 
 # download the installation disk
 if [ ! -e "${ISO_FILENAME}" ]; then
-  echo "Downloading ${ISO_FILE} ..."
+  echo "Downloading ${ISO_URL} ..."
   curl --fail --output "${ISO_FILENAME}" -L "${ISO_URL}"
 fi
 
@@ -192,14 +196,13 @@ echo "Verifying ${ISO_FILE} ..."
 ISO_HASHURL="${ISO_BASEURL}/${HASH_FILE}"
 ISO_HASHSIGNURL="${ISO_HASHURL}.sign"
 if [ ! -e "${HASH_FILENAME}" ]; then
-  echo "Downloading ${HASH_FILE} ..."
-  # use -sS silent options since the download is very small
-  curl --fail -sS --output "${HASH_FILENAME}" -L "${ISO_HASHURL}"
+  echo "Downloading ${ISO_HASHURL} ..."
+  curl --fail --output "${HASH_FILENAME}" -L "${ISO_HASHURL}"
 fi
 # check signature if gpg is available
 if hash gpg 2>/dev/null; then
-  echo "Downloading ${HASHSIGN_FILE} ..."
-  curl --fail -sS --output "${HASHSIGN_FILENAME}" -L "${ISO_HASHSIGNURL}"
+  echo "Downloading ${ISO_HASHSIGNURL} ..."
+  curl --fail --output "${HASHSIGN_FILENAME}" -L "${ISO_HASHSIGNURL}"
   echo "Get GPG key ${GPG_KEY} ..."
   gpg --keyserver hkp://keyring.debian.org --recv-keys ${GPG_KEY}
   echo "Verify GPG key ..."
